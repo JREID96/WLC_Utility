@@ -1,8 +1,8 @@
 ### Wireless LAN Controller Utility 2.0 - Jarred Reid
 ### Changelog:
-### Version 1.0: Initial Release (5/20/2019)
-### Version 1.6: Rewrote program. Ability to config individual controllers has been added.
-### Version 2.0: Batch support has been added to the program. Use "wlc_config.ini" to add IPs and hostnames/MAC address.
+### Version 1.0 (5/20/2019) : Initial Release
+### Version 1.6 (7/3/2019): Rewrote program. Ability to config individual controllers has been added.
+### Version 2.0 (12/18/2019): Batch support has been added to the program. Use "wlc_config.ini" to add IPs and hostnames/MAC address.
 
 import time, paramiko, os, sys
 wlc_session = paramiko.SSHClient()
