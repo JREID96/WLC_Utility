@@ -1,232 +1,104 @@
-### This is the syntax for adding a MAC address: config macfilter add <MAC address> <WLAN ID> [interface name] [description] [client IP address]
-### Be sure to add spaces between the concatentated strings so they are parsed correctly by the Cisco CLI
-
+### Wireless LAN Controller Utility 2.0 - Jarred Reid
 ### Changelog:
 ### Version 1.0: Initial Release (5/20/2019)
-### Jarred Reid 
+### Version 1.6: Rewrote program. Ability to config individual controllers has been added.
+### Version 2.0: Batch support has been added to the program. Use "wlc_config.ini" to add IPs and hostnames/MAC address.
 
-import time, paramiko
+import time, paramiko, os, sys
 wlc_session = paramiko.SSHClient()
 wlc_session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-print("---------------------------")
-print("WLC Utility 1.0 - Add or delete MAC address")
-print("---------------------------")
-
-user1 = input("Enter the administrator username: ")
-pass1 = input("Enter the administrator password: ")
-
-operation = int(input("Do you want to add [1] or remove [2] a device?: "))
-
-def AddTo_WLC():
-    mac_addr = input("Enter the MAC address to be added" )
-    if "-" in mac_addr:
-            mac_addr = mac_addr.replace('-', ':')
-    description = input("Enter the device description: ")
-    int_name = " keynet "
+### As initialized upon program startup, the first item of this list, path[0], is the directory containing the script that was used to invoke the Python interpreter
+os.chdir(sys.path[0])
 
 
-    ### Initiate SSH Connection to WLC #1
-    wlc_session.connect('192.168.1.1', port='22', username='null', password='null')
+def get_Credential():
 
-    ### Pass the CLI to Python Terminal
-
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
-
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
-
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter add ' + mac_addr + ' 1 ' + int_name + description + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    ### Initiate SSH Connection to WLC #2
-    wlc_session.connect('192.168.1.2', port='22', username='null', password='null')
-
-    ### Pass the CLI to Python Terminal
-
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
-
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
-
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter add ' + mac_addr + ' 1 ' + int_name + description + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-        ### Initiate SSH Connection to WLC #3
-    wlc_session.connect('192.168.2.1', port='22', username='null', password='null')
-
-    ### Pass the CLI to Python Terminal
-
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
-
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
-
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter add ' + mac_addr + ' 2 ' + int_name + description + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
+    credentials = ["username", "password"]
     
-    ### Initiate SSH Connection to WLC #4
-    wlc_session.connect('192.168.2.2', port='22', username='null', password='null')
+    credentials[0] = input("Enter the administrator's username: ")
+    credentials[1] = input("Enter the administrator's password: ")
 
-    ### Pass the CLI to Python Terminal
+    return credentials
 
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
+def get_WLC_Info():
 
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
+    wlc = ["ip_addr", "port", "int"]
 
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter add ' + mac_addr + ' 2 ' + int_name + description + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
+    wlc[0] =  input("Enter the WLC's IP address: ")
+    wlc[1] =  input("Enter the WLC's port (leave blank for default port 22): ")
+    wlc[2] =  input("Enter the WLC interface name: ")
+    
+    ### In order for the interface name to be parsed correctly by the CLI, spaces must be appended before and after the defined interface string. 
+    wlc[2] = (" " + wlc[2] + " ")
 
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
+    if wlc[1] == "":
+        wlc[1] = "22"
 
-    ### Initiate SSH Connection to WLC #1
-    wlc_session.connect('192.168.3.1', port='22', username='null', password='null')
+    return wlc
 
-    ### Pass the CLI to Python Terminal
+def import_Config():
+    
+    from configparser import ConfigParser
 
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
+    config_file = 'wlc_config.ini'
 
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
+    parser = ConfigParser()
+    parser.read(config_file)
+    
+    import_IP = parser.get('CONNECTION', 'ip',).split(',')
+    import_Port = parser.get('CONNECTION', 'port').split(',')
+    import_Int = parser.get('CONNECTION', 'interface').split(',')
 
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter add ' + mac_addr + ' 1 ' + int_name + description + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
+    wlc = ["ip_addr", "port", "int"]
 
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
+    ### Figure out how to parse the list entries 1,2 as strings and strip the list brackets and quotes so that all settings are configured from the ini
+    wlc[0] = import_IP
+    wlc[1] = "22"
+    wlc[2] = "keynet"
 
-    ### Initiate SSH Connection to WLC #2
-    wlc_session.connect('192.168.3.2', port='22', username='null', password='null')
+    return wlc
 
-    ### Pass the CLI to Python Terminal
-
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
-
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
-
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter add ' + mac_addr + ' 1 ' + int_name + description + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-def RemoveFrom_WLC():
-    mac_addr = input("Enter the MAC address to be removed: " )
+def get_Device_Info():
+    mac_addr = input("Please enter the MAC address: ")
+    ### The MAC address will not be accepted by the CLI unless the hyphens are replaced by colons. 
     if "-" in mac_addr:
             mac_addr = mac_addr.replace('-', ':')
+    dev_description = input("Enter the device's description: ")
+   
+    return mac_addr, dev_description
 
-    ### Initiate SSH Connection to WLC #1
-    wlc_session.connect('192.168.1.1', port='22', username='null', password='null')
+def set_Operation():
+    
+    print("""
+    [1] Add device to whitelist
+    [2] Remove device from whitelist
+    """)
 
-    ### Pass the CLI to Python Terminal
+    set_op = int(input("Please make a selection: "))
 
+    if set_op == 1:
+        dev_operation = "add"
+
+    if set_op == 2:
+        dev_operation = "delete"
+
+    elif set_op != 1 or 2:
+        print("Please enter a valid selection from above: ")
+
+    return dev_operation
+
+def start_Operation():
+    
+    ### Initiate SSH tunnel to the WLC
+    wlc_session.connect(wlc[0], port=wlc[1], username='null', password='null')
+
+    ### Print the stdout to client terminal
     wlc_ssh_class = wlc_session.invoke_shell()
     time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
+    wlc_ssh_class.send(credentials[0] + '\n')
     time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
+    wlc_ssh_class.send(credentials[1] + '\n')
     time.sleep(0.1)
 
     ### Disable paging to display properly
@@ -234,12 +106,13 @@ def RemoveFrom_WLC():
     time.sleep(0.1)
     strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
 
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter delete '+ mac_addr + '\n')
+    ### Performing the requested operation on the WLC
+    wlc_ssh_class.send('config macfilter ' + dev_operation + ' ' + mac_addr + ' 1 ' + wlc[2] + ' ' + dev_description + '\n')
     time.sleep(0.1)
     output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
     print(output)
 
+    ### Saving the running config
     wlc_ssh_class.send('save config')
     time.sleep(0.1)
     output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
@@ -248,16 +121,16 @@ def RemoveFrom_WLC():
     output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
     print(output)
 
-     ### Initiate SSH Connection to WLC #2
-    wlc_session.connect('192.168.1.2', port='22', username='null', password='null')
+def auto_Operation(ip, wlc, credentials, dev_operation, mac_addr, dev_description):
+    ### Initiate SSH tunnel to the WLC
+    wlc_session.connect(ip, port=wlc[1], username='null', password='null')
 
-    ### Pass the CLI to Python Terminal
-
+    ### Print the stdout to client terminal
     wlc_ssh_class = wlc_session.invoke_shell()
     time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
+    wlc_ssh_class.send(credentials[0] + '\n')
     time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
+    wlc_ssh_class.send(credentials[1] + '\n')
     time.sleep(0.1)
 
     ### Disable paging to display properly
@@ -265,12 +138,19 @@ def RemoveFrom_WLC():
     time.sleep(0.1)
     strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
 
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter delete '+ mac_addr + '\n')
+    ### Performing the requested operation on the WLC
+
+    if dev_operation == "add":
+        wlc_ssh_class.send('config macfilter ' + dev_operation + ' ' + mac_addr + ' 1 ' + wlc[2] + ' ' + dev_description + '\n')
+
+    if dev_operation == "remove":
+        wlc_ssh_class.send('config macfilter ' + dev_operation + ' ' + mac_addr + '\n')
+
     time.sleep(0.1)
     output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
     print(output)
 
+    ### Saving the running config
     wlc_ssh_class.send('save config')
     time.sleep(0.1)
     output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
@@ -279,136 +159,47 @@ def RemoveFrom_WLC():
     output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
     print(output)
 
-    ### Initiate SSH Connection to WLC #3
-    wlc_session.connect('192.168.2.1', port='22', username='null', password='null')
 
-    ### Pass the CLI to Python Terminal
+def start_Main():
 
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
+    if prompt_Config == "1":
+        use_Config = "TRUE"
+        wlc = import_Config()
+        mac_addr, dev_description = get_Device_Info()
+        dev_operation = set_Operation()
 
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
+        print(dev_description + " with MAC address: " + mac_addr + " will be " + dev_operation + "ed to/from the following controller IP(s): ")
+        print(wlc[0])
+        print()
 
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter delete '+ mac_addr + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
+        for ip in wlc[0]:
+            print("Adding to Controller with IP: " + ip)
+            print()
+            print("Controller Output: ")
+            auto_Operation(ip, wlc, credentials, dev_operation, mac_addr, dev_description)
+            
+    if prompt_Config == "2":
+        use_Config = "FALSE"
+        wlc = get_WLC_Info()
+        mac_addr, dev_description = get_Device_Info()
+        dev_operation = set_Operation()
+        start_Operation()
+            
+print("""
+    cisco Wireless LAN Controller Utility v2
+    ----------------------------------------
+    """)
 
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
+credentials = get_Credential()
 
-    ### Initiate SSH Connection to WLC #4
-    wlc_session.connect('192.168.2.2', port='22', username='null', password='null')
+prompt_Config = input("Press [1] to import WLC info from configuration file, otherwise press enter: ")
 
-    ### Pass the CLI to Python Terminal
+while True:
+    start_Main()
 
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
-
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
-
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter delete '+ mac_addr + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    ### Initiate SSH Connection to WLC #1
-    wlc_session.connect('192.168.3.1', port='22', username='null', password='null')
-
-    ### Pass the CLI to Python Terminal
-
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
-
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
-
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter delete '+ mac_addr + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    ### Initiate SSH Connection to WLC #2
-    wlc_session.connect('192.168.3.2', port='22', username='null', password='null')
-
-    ### Pass the CLI to Python Terminal
-
-    wlc_ssh_class = wlc_session.invoke_shell()
-    time.sleep(0.1)
-    wlc_ssh_class.send(user1 +'\n')
-    time.sleep(0.1)
-    wlc_ssh_class.send(pass1 +'\n')
-    time.sleep(0.1)
-
-    ### Disable paging to display properly
-    wlc_ssh_class.send('config paging disable'+'\n')
-    time.sleep(0.1)
-    strip_login_text = wlc_ssh_class.recv(1024).decode('utf-8')
-
-    ### Here you can pass the commands to the WLC
-    wlc_ssh_class.send('config macfilter delete '+ mac_addr + '\n')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-    wlc_ssh_class.send('save config')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    wlc_ssh_class.send('y')
-    time.sleep(0.1)
-    output = wlc_ssh_class.recv(2048).decode('utf-8', 'backslashreplace')
-    print(output)
-
-def Main():  
-    if operation == 1:
-        AddTo_WLC()
-    elif operation == 2:
-        RemoveFrom_WLC()
-    else:
-        print("Please select from options Add [1] or Delete [2]")
-
-Main()
+# get credentials
+# get wireless controller information
+# define operation
+# get MAC info
+# execute
+# loop/exit
